@@ -1,6 +1,8 @@
 library(ggplot2)
 library(dplyr)
 
+# For test purposes, used deploy ids 388, 398, 619
+
 # plot.fastlog returns a ggplot object depicting a portion of a CEFAS fastlog
 plot.fastlog <- function(deployid, eventid, start = NULL, span.sec = 5) {
   # Read metadata. This returns two rows: deployment and recovery
@@ -24,18 +26,17 @@ plot.fastlog <- function(deployid, eventid, start = NULL, span.sec = 5) {
   if(nrow(event) == 0) stop(sprintf('No event %i for Deploy ID %i', eventid, deployid))
   
   # Assert start falls within event
-  if(!between(start, min(event$UTC), max(event$UTC))) stop(sprintf('Start time %s falls outside of event %i for Deploy ID %i', start, eventid, deployid))
+  if(!is.null(start) && !between(start, min(event$UTC), max(event$UTC))) 
+    stop(sprintf('Start time %s falls outside of event %i for Deploy ID %i', start, eventid, deployid))
   
   ## Plot event
   # Determine x-axis limits
   event.xlim <- c(0, span.sec) + if(is.null(start)) event$UTC[1] else start
+  # Expanded x-axis limits used to make lines "spill" when event is truncated
+  expanded.xlim <- event.xlim + c(-1, 1)
   
   # Filter event to within event.xlim
-  plot.data <- filter(event, 
-                      UTC >= event.xlim[1],
-                      UTC <= event.xlim[2])
-  
-  # Assert 
+  plot.data <- filter(event, between(UTC, expanded.xlim[1], expanded.xlim[2]))
   
   # Date formatting function for x-axis
   event.date.labels <- function(dates) format(dates, format = '%b %e %H:%M:%OS1')
