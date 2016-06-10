@@ -53,8 +53,9 @@ plot.fastlog <- function(deployid, eventid, start = NULL, span.sec = 5) {
     # Set x-axis to display dates every second
     # Fix xlim so events shorter than 1s still display
     scale_x_datetime(date_breaks = '1 sec',
-                     labels = event.date.labels,
-                     limits = event.xlim) +
+                     labels = event.date.labels) +
+    # Clip the plot so lines run to the edge
+    coord_cartesian(xlim = event.xlim) +
     # Flip the y axis so it displays depth instead of pressure
     scale_y_reverse() +
     # Label axes and give plot a title
